@@ -5,7 +5,6 @@ const app = express();
 const cors = require("cors");
 app.use(cors());
 app.use(express.json());
-app.use(cors());
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { createRemoteJWKSet, jwtVerify } = require("jose-node-cjs-runtime");
 const uri = process.env.MONGODB_URI;
@@ -43,10 +42,19 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
+const normalizeDestination = (data) => ({
+  ...data,
+  price_per_hour: Number(data.price_per_hour),
+  capacity: Number(data.capacity),
+  available_slots: Array.isArray(data.available_slots)
+    ? data.available_slots
+    : [data.available_slots].filter(Boolean),
+});
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
     const db = client.db("wanderlust");
     const destinationCollection = db.collection("destinations");
     const bookingCollection = db.collection("bookings");
@@ -72,16 +80,18 @@ async function run() {
       res.json(result);
     });
 
-    app.delete("/destination/:id", async (req, res) => {
+    app.delete("/destination/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await destinationCollection.deleteOne(query);
       res.json(result);
     });
 
-    app.patch("/destination/:id", async (req, res) => {
+    app.patch("/destination/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
-      const updateData = req.body;
+      const rest = { ...req.body };
+      delete rest._id;
+      const updateData = normalizeDestination(rest);
 
       const result = await destinationCollection.updateOne(
         { _id: new ObjectId(id) },
@@ -98,13 +108,15 @@ async function run() {
     });
 
     app.get("/destination", async (req, res) => {
-      const cursor = destinationCollection.find();
+      const { owner } = req.query;
+      const query = owner ? { owner_email: owner } : {};
+      const cursor = destinationCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    app.post("/destination", async (req, res) => {
-      const destinationData = req.body;
+    app.post("/destination", verifyToken, async (req, res) => {
+      const destinationData = normalizeDestination(req.body);
       console.log(destinationData);
       const result = await destinationCollection.insertOne(destinationData);
       res.json(result);
