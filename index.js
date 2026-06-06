@@ -81,7 +81,7 @@ async function run() {
       res.json(result);
     });
 
-    app.delete("/facilities/:id", verifyToken, async (req, res) => {
+    app.delete("/facility/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const facility = await facilityCollection.findOne(query);
@@ -95,7 +95,7 @@ async function run() {
       res.json(result);
     });
 
-    app.patch("/facilities/:id", verifyToken, async (req, res) => {
+    app.patch("/facility/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const rest = { ...req.body };
       delete rest._id;
@@ -117,14 +117,14 @@ async function run() {
       res.json(result);
     });
 
-    app.get("/facilities/:id", verifyToken, async (req, res) => {
+    app.get("/facility/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await facilityCollection.findOne(query);
       res.send(result);
     });
 
-    app.get("/facilities", async (req, res) => {
+    app.get("/facility", async (req, res) => {
       const { owner, search, type } = req.query;
       const query = owner ? { owner_email: owner } : {};
       if (search) {
@@ -138,7 +138,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/facilities", verifyToken, async (req, res) => {
+    app.post("/facility", verifyToken, async (req, res) => {
       const facilityData = normalizeFacility(req.body);
       console.log(facilityData);
       const result = await facilityCollection.insertOne(facilityData);
