@@ -108,8 +108,14 @@ async function run() {
     });
 
     app.get("/facilities", async (req, res) => {
-      const { owner } = req.query;
+      const { owner, search, type } = req.query;
       const query = owner ? { owner_email: owner } : {};
+      if (search) {
+        query.name = { $regex: search, $options: "i" };
+      }
+      if (type && type !== "All") {
+        query.facility_type = { $in: [type] };
+      }
       const cursor = facilityCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
