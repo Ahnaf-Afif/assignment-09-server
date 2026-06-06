@@ -42,7 +42,7 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-const normalizeDestination = (data) => ({
+const normalizeFacility = (data) => ({
   ...data,
   price_per_hour: Number(data.price_per_hour),
   capacity: Number(data.capacity),
@@ -55,8 +55,8 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const db = client.db("wanderlust");
-    const destinationCollection = db.collection("destinations");
+    const db = client.db("sportnest");
+    const facilityCollection = db.collection("facilities");
     const bookingCollection = db.collection("bookings");
 
     app.post("/bookings", verifyToken, async (req, res) => {
@@ -83,7 +83,7 @@ async function run() {
     app.delete("/facilities/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
-      const result = await destinationCollection.deleteOne(query);
+      const result = await facilityCollection.deleteOne(query);
       res.json(result);
     });
 
@@ -91,9 +91,9 @@ async function run() {
       const { id } = req.params;
       const rest = { ...req.body };
       delete rest._id;
-      const updateData = normalizeDestination(rest);
+      const updateData = normalizeFacility(rest);
 
-      const result = await destinationCollection.updateOne(
+      const result = await facilityCollection.updateOne(
         { _id: new ObjectId(id) },
         { $set: updateData },
       );
@@ -103,22 +103,22 @@ async function run() {
     app.get("/facilities/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await destinationCollection.findOne(query);
+      const result = await facilityCollection.findOne(query);
       res.send(result);
     });
 
     app.get("/facilities", async (req, res) => {
       const { owner } = req.query;
       const query = owner ? { owner_email: owner } : {};
-      const cursor = destinationCollection.find(query);
+      const cursor = facilityCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
 
     app.post("/facilities", verifyToken, async (req, res) => {
-      const destinationData = normalizeDestination(req.body);
-      console.log(destinationData);
-      const result = await destinationCollection.insertOne(destinationData);
+      const facilityData = normalizeFacility(req.body);
+      console.log(facilityData);
+      const result = await facilityCollection.insertOne(facilityData);
       res.json(result);
     });
 
