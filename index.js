@@ -36,6 +36,7 @@ const verifyToken = async (req, res, next) => {
   try {
     const { payload } = await jwtVerify(token, JWKS);
     console.log(payload);
+    req.user = payload;
     next();
   } catch (error) {
     return res.status(403).json({ error: "Forbidden" });
@@ -83,6 +84,13 @@ async function run() {
     app.delete("/facilities/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
+      const facility = await facilityCollection.findOne(query);
+      if (!facility) {
+        return res.status(404).json({ error: "Facility not found" });
+      }
+      if (facility.owner_email !== req.user?.email) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
       const result = await facilityCollection.deleteOne(query);
       res.json(result);
     });
@@ -92,6 +100,15 @@ async function run() {
       const rest = { ...req.body };
       delete rest._id;
       const updateData = normalizeFacility(rest);
+      const facility = await facilityCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      if (!facility) {
+        return res.status(404).json({ error: "Facility not found" });
+      }
+      if (facility.owner_email !== req.user?.email) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
 
       const result = await facilityCollection.updateOne(
         { _id: new ObjectId(id) },
