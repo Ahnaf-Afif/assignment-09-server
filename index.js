@@ -59,35 +59,35 @@ async function run() {
     const destinationCollection = db.collection("destinations");
     const bookingCollection = db.collection("bookings");
 
-    app.post("/booking", verifyToken, async (req, res) => {
+    app.post("/bookings", verifyToken, async (req, res) => {
       const bookingData = req.body;
       console.log(bookingData);
       const result = await bookingCollection.insertOne(bookingData);
       res.json(result);
     });
 
-    app.get("/booking/:userId", verifyToken, async (req, res) => {
+    app.get("/bookings/:userId", verifyToken, async (req, res) => {
       const { userId } = req.params;
       const cursor = bookingCollection.find({ userId: userId });
       const result = await cursor.toArray();
       res.json(result);
     });
 
-    app.delete("/booking/:id", verifyToken, async (req, res) => {
+    app.delete("/bookings/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await bookingCollection.deleteOne(query);
       res.json(result);
     });
 
-    app.delete("/destination/:id", verifyToken, async (req, res) => {
+    app.delete("/facilities/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
       const result = await destinationCollection.deleteOne(query);
       res.json(result);
     });
 
-    app.patch("/destination/:id", verifyToken, async (req, res) => {
+    app.patch("/facilities/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const rest = { ...req.body };
       delete rest._id;
@@ -100,14 +100,14 @@ async function run() {
       res.json(result);
     });
 
-    app.get("/destination/:id", verifyToken, async (req, res) => {
+    app.get("/facilities/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await destinationCollection.findOne(query);
       res.send(result);
     });
 
-    app.get("/destination", async (req, res) => {
+    app.get("/facilities", async (req, res) => {
       const { owner } = req.query;
       const query = owner ? { owner_email: owner } : {};
       const cursor = destinationCollection.find(query);
@@ -115,7 +115,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/destination", verifyToken, async (req, res) => {
+    app.post("/facilities", verifyToken, async (req, res) => {
       const destinationData = normalizeDestination(req.body);
       console.log(destinationData);
       const result = await destinationCollection.insertOne(destinationData);
