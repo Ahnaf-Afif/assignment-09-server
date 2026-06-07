@@ -80,12 +80,12 @@ http://localhost:5000
 ### Facilities
 
 ~~~txt
-GET    /facilities
-GET    /facilities?search=arena&type=Football
-GET    /facilities/:id
-POST   /facilities
-PATCH  /facilities/:id
-DELETE /facilities/:id
+GET    /facility
+GET    /facility?search=arena&type=Football
+GET    /facility/:id
+POST   /facility
+PATCH  /facility/:id
+DELETE /facility/:id
 ~~~
 
 ### Bookings
