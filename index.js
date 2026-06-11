@@ -125,7 +125,7 @@ async function run() {
     });
 
     app.get("/facility", async (req, res) => {
-      const { owner, search, type } = req.query;
+      const { owner, search, type, limit } = req.query;
       const query = owner ? { owner_email: owner } : {};
       if (search) {
         query.name = { $regex: search, $options: "i" };
@@ -133,7 +133,9 @@ async function run() {
       if (type && type !== "All") {
         query.facility_type = { $in: [type] };
       }
-      const cursor = facilityCollection.find(query);
+      const cursor = facilityCollection
+        .find(query)
+        .limit(Number(limit) || 0);
       const result = await cursor.toArray();
       res.send(result);
     });
